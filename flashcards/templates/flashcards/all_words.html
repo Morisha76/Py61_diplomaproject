@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Все слова - Мой китайский словарь</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .word-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .word-table th, .word-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .word-table th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .word-table tr:hover {
+            background-color: #f5f5f5;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #4CAF50;
+            text-decoration: none;
+        }
+        .stats {
+            margin-bottom: 20px;
+            font-style: italic;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>所有单词 (Все слова)</h1>
+        <div class="stats">总共 {{ words_count }} 个单词 (Всего слов: {{ words_count }})</div>
+    </div>
+
+    {% if words %}
+        <table class="word-table">
+            <thead>
+                <tr>
+                    <th>汉字 (Иероглифы)</th>
+                    <th>拼音 (Пиньинь)</th>
+                    <th>翻译 (Перевод)</th>
+                    <th>类别 (Категория)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for word in words %}
+                <tr>
+                    <td style="font-size: 24px;">{{ word.hanzi }}</td>
+                    <td>{{ word.pinyin }}</td>
+                    <td>{{ word.translation }}</td>
+                    <td>{{ word.category|default:"未指定" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>还没有单词。添加第一个单词吧！ (Слов пока нет. Добавьте первое слово!)</p>
+    {% endif %}
+
+    <a href="{% url 'index' %}" class="back-link">← 返回主页 (Назад на главную)</a>
+</body>
+</html>

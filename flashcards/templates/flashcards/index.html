@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang= "ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Мой словарь</title>
+</head>
+<body>
+    <h1>Добро пожаловать в мой словарь!</h1>
+    <p>这里是我收集的中文单词！(Здесь я собираю китайские слова!)</p>
+
+    <nav>
+        <a href="{% url 'all_words' %}">📚 所有单词 (Все слова)</a> |
+        <a href="{% url 'search_word' %}">🔍 搜索单词 (Поиск слов) </a>
+        <a href="/admin/flashcards/chineseword/">➕ 添加单词 (Добавить слово через админку)</a>
+    <nav>
+
+</body>
+</html>
