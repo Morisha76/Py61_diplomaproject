@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Импорт слов из CSV</title>
+    <style>
+        body { font-family: Arial; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .upload-box {
+            background: white; padding: 30px; border: 2px dashed #ccc;
+            border-radius: 10px; text-align: center; margin: 20px 0;
+        }
+        button { background: #2196F3; color: white; padding: 12px 30px;
+                border: none; border-radius: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>📁 Импорт слов из CSV-файла</h1>
+
+    <div class="upload-box">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="file" name="csv_file" accept=".csv" required>
+            <br><br>
+            <button type="submit">📤 Загрузить и импортировать</button>
+        </form>
+    </div>
+
+    <h3>📋 Формат CSV-файла:</h3>
+    <pre>
+hanzi,pinyin,translation,category
+你好,nǐ hǎo,привет,существительное
+谢谢,xiè xie,спасибо,существительное
+爱,ài,любовь,существительное
+    </pre>
+
+    <p><a href="{% url 'all_words' %}">← Назад к списку слов</a></p>
+</body>
+</html>

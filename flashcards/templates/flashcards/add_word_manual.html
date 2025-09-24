@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Добавить слово вручную</title>
+</head>
+<body>
+    <h1>➕ Добавить новое слово</h1>
+
+    <form method="post">
+        {% csrf_token %}
+        <input type="text" name="hanzi" placeholder="汉字 (например: 你好)" required>
+        <input type="text" name="pinyin" placeholder="拼音 (например: nǐ hǎo)" required>
+        <input type="text" name="translation" placeholder="Перевод (например: привет)" required>
+        <select name="category">
+            <option value="其他">其他 (Другое)</option>
+            <option value="существительное">Существительное</option>
+            <option value="глагол">Глагол</option>
+            <option value="прилагательное">Прилагательное</option>
+        </select>
+        <button type="submit">Добавить слово</button>
+    </form>
+</body>
+</html>
