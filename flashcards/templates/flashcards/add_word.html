@@ -1,0 +1,123 @@
+{% extends "flashcards/base.html" %}
+
+{% block content %}
+<style>
+    .add-word-form {
+        max-width: 600px;
+        margin: 0 auto;
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .form-group {
+        margin-bottom: 20px;
+    }
+    label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #333;
+    }
+    input[type="text"], textarea, select {
+        width: 100%;
+        padding: 10px;
+        border: 2px solid #ddd;
+        border-radius: 5px;
+        font-size: 16px;
+        transition: border-color 0.3s;
+    }
+    input[type="text"]:focus, textarea:focus, select:focus {
+        border-color: #4CAF50;
+        outline: none;
+    }
+    textarea {
+        height: 80px;
+        resize: vertical;
+    }
+    .required::after {
+        content: " *";
+        color: red;
+    }
+    .btn-submit {
+        background: #4CAF50;
+        color: white;
+        padding: 12px 30px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        width: 100%;
+    }
+    .btn-submit:hover {
+        background: #45a049;
+    }
+    .messages {
+        margin-bottom: 20px;
+    }
+    .message {
+        padding: 10px;
+        border-radius: 5px;
+        margin: 10px 0;
+    }
+    .success { background: #d4edda; color: #155724; }
+    .error { background: #f8d7da; color: #721c24; }
+    .warning { background: #fff3cd; color: #856404; }
+</style>
+
+<h1>✏️ 添加新单词 (Добавить новое слово)</h1>
+
+{% if messages %}
+<div class="messages">
+    {% for message in messages %}
+    <div class="message {{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="add-word-form">
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label for="hanzi" class="required">汉字 (Иероглифы)</label>
+            <input type="text" id="hanzi" name="hanzi" placeholder="例如: 你好" required>
+        </div>
+
+        <div class="form-group">
+            <label for="pinyin" class="required">拼音 (Пиньинь)</label>
+            <input type="text" id="pinyin" name="pinyin" placeholder="例如: nǐ hǎo" required>
+        </div>
+
+        <div class="form-group">
+            <label for="translation" class="required">翻译 (Перевод)</label>
+            <input type="text" id="translation" name="translation" placeholder="例如: привет" required>
+        </div>
+
+        <div class="form-group">
+            <label for="category">类别 (Категория)</label>
+            <select id="category" name="category">
+                <option value="其他">其他 (Другое)</option>
+                <option value="существительное">名词 (Существительное)</option>
+                <option value="глагол">动词 (Глагол)</option>
+                <option value="прилагательное">形容词 (Прилагательное)</option>
+                <option value="наречие">副词 (Наречие)</option>
+                <option value="приветствие">问候 (Приветствие)</option>
+                <option value="еда">食物 (Еда)</option>
+                <option value="семья">家庭 (Семья)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="example">例子 (Пример использования)</label>
+            <textarea id="example" name="example" placeholder="例如: 你好，我叫Анна。"></textarea>
+        </div>
+
+        <button type="submit" class="btn-submit">添加单词 (Добавить слово)</button>
+    </form>
+</div>
+
+<div style="text-align: center; margin-top: 20px;">
+    <a href="{% url 'all_words' %}">📚 查看所有单词 (Посмотреть все слова)</a>
+</div>
+{% endblock %}

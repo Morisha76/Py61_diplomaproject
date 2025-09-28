@@ -1,3 +1,7 @@
 from django.test import TestCase
 
-# Create your tests here.
+print("=== URLs загружены ===")
+for url in urlpatterns:
+    print(f'Path: {url.pattern} -> {url.name}')
+
+

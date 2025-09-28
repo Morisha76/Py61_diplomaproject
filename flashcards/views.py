@@ -1,8 +1,12 @@
+from gc import get_objects
 from gettext import translation
 from idlelib.iomenu import errors
+from tkinter.scrolledtext import example
 
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
+from django.contrib.auth import logout
+from django.shortcuts import get_object_or_404
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from unicodedata import category
@@ -89,7 +93,7 @@ def quick_add_words(request):
                 hanzi=api_result['hanzi'],
                 pinyin=api_result['pinyin'],
                 translation= translation,
-                category='其他'
+                category=category
                 )
                 added_count += 1
             else:
@@ -218,3 +222,79 @@ def register(request):
         form = UserCreationForm()
 
     return render(request, 'flashcards/register.html', {'form': form})
+
+def custom_logout(request):
+    """
+    Кастомный выход с перенаправлением
+    """
+    logout(request)
+    messages.info(request, 'Вы успешно вышли из системы!')
+    return redirect('index')
+
+def add_word(request):
+    """
+    Форма для добавления нового слова
+    """
+    if request.method == 'POST':
+        hanzi = request.POST.get('hanzi', '').strip()
+        pinyin = request.POST.get('pinyin', '').strip()
+        translation = request.POST.get('translation', '').strip()
+        category = request.POST.get('category', '').strip()
+        example = request.POST.get('example', '').strip()
+
+        if hanzi and pinyin and translation:
+            if not ChineseWord.objects.filter(hanzi=hanzi, user=request.user).exists():
+                ChineseWord.objects.create(
+                    user=request.user,
+                    hanzi=hanzi,
+                    pinyin=pinyin,
+                    translation=translation,
+                    category=category,
+                    example=example
+                )
+                messages.success(request, f'Слово "{hanzi}" успешно добавлено!')
+                return redirect('add_word')
+            else:
+                messages.warning(request, f'Слово "{hanzi}" уже есть в вашем словаре!')
+        else:
+            messages.error(request, 'Заполните все обязательные поля!')
+
+    return render(request, 'flashcards/add_word.html')
+
+def edit_word(request, word_id):
+    """
+    Редактироание существующего слова
+    """
+    # Получение слова, проверяя, что оно принадлежит текущему пользователю
+    word = get_object_or_404(ChineseWord, id=word_id, user=request.user)
+
+    if request.method == 'POST':
+        word.hanzi = request.POST.get('hanzi', '').strip()
+        word.pinyin = request.POST.get('pinyin', '').strip()
+        word.translation = request.POST.get('translation', '').strip()
+        word.category = request.POST.get('category', '').strip()
+        word.example = request.POST.get('example', '').strip()  # Обновляем данные слова
+
+        if word.hanzi and word.pinyin and word.translation:
+            word.save()
+            messages.success(request, f'Слово {word.hanzi} успешно обновлено!')
+            return redirect('all_words')
+        else:
+            messages.error(request, 'Заполните все обязательные поля!')
+
+    context = {'word': word} #Передача слова в шаблон для редактирования
+    return render(request, 'flashcards/edit_word.html', context)
+
+def delete_word(request, word_id):
+    """
+    Удаление слова
+    """
+    word = get_object_or_404(ChineseWord, id=word_id, user=request.user)
+
+    if request.method == 'POST':
+        word_name = word.hanzi
+        word.delete()
+        messages.success(request, f'Слово {word_name} успешно удалено!')
+        return redirect('all_words')
+
+    return redirect('all_words')
