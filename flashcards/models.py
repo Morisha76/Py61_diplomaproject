@@ -1,6 +1,15 @@
+from tabnanny import verbose
+
 from django.db import models
+from django.contrib.auth.models import User
 
 class ChineseWord(models.Model):
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE, # После удаления пользователем аккаунта, удаляются и все его слова
+        verbose_name= 'Пользователь'
+    )
 
     hanzi = models.CharField(max_length=50, verbose_name= 'Иероглифы')
     pinyin = models.CharField(max_length=100, verbose_name= 'Пиньинь')

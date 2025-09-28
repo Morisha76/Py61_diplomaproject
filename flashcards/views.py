@@ -1,5 +1,8 @@
 from gettext import translation
+from idlelib.iomenu import errors
 
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth import login
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from unicodedata import category
@@ -12,9 +15,11 @@ import csv
 def index(request):
     return render(request, 'flashcards/index.html', {})
 
-# Функция для списка всех слов
 def all_words(request):
-    words = ChineseWord.objects.all().order_by('-date_added')  # все слова из базы, отсортированные по дате (новые сверху)
+    """
+    Показываем слова текущего пользователя
+    """
+    words = ChineseWord.objects.filter(user=request.user).order_by('-date_added')
 
     context = {
         'words': words,
@@ -24,13 +29,16 @@ def all_words(request):
 
 def search_word(request):
     """
-    Страница поиска и добавления слов через API
+    Поиск и добавление слов для текущего пользователя
     """
     if request.method == 'POST':
         hanzi = request.POST.get('hanzi', '').strip()
 
         if hanzi:
-            existing_word = ChineseWord.objects.filter(hanzi=hanzi).first() # Поиск слова в базе данных,чтобы не дублировать
+            existing_word = ChineseWord.objects.filter(
+                hanzi=hanzi,
+                user=request.user
+            ).first()
 
             if existing_word:
                 messages.info(request, f'Слово {hanzi} уже есть в словаре!')
@@ -42,6 +50,7 @@ def search_word(request):
                     translation = ', '.join(definitions) if definitions else 'Перевод не найден'
 
                     new_word = ChineseWord(
+                        user=request.user,
                         hanzi= api_result['hanzi'],
                         pinyin= api_result['pinyin'],
                         translation= translation,
@@ -59,7 +68,7 @@ def search_word(request):
 
 def quick_add_words(request):
     """
-    Функция для быстрого добавления нескольких популярных слов
+    Функция для быстрого добавления слов для текуущего пользователя
     """
     popular_words = ['你好','谢谢','爱','人','大','小','水','火','学习','朋友']
 
@@ -67,15 +76,16 @@ def quick_add_words(request):
     errors = []
 
     for hanzi in popular_words:
-        if not ChineseWord.objects.filter(hanzi=hanzi).exists(): # Проверка, нет ли уже слова в базе
+        if not ChineseWord.objects.filter(hanzi=hanzi, user=request.user).exists(): # Проверка, нет ли уже слова в базе
             api_result = get_word_info(hanzi) # Получение результата API
 
-            if api_result and api_result['sucsess']:
+            if api_result and api_result['success']:
 
                 definitions = api_result.get('definitions', []) # Проверка, что definitions существует и не пустой
                 translation = ', '.join(definitions[:3]) if definitions else 'Перевод не найден'
 
                 ChineseWord.objects.create(
+                user=request.user,
                 hanzi=api_result['hanzi'],
                 pinyin=api_result['pinyin'],
                 translation= translation,
@@ -142,27 +152,69 @@ def add_word_manual(request):
 
 def import_csv(request):
     """
-    Импорт слов из CSV-файла
+    Импорт слов из CSV-файла для текущего пользователя
     """
     if request.method == 'POST' and request.FILES.get('csv_file'):
         csv_file = request.FILES['csv_file']
 
-        decoded_file = csv_file.read().decode('utf-8').splitlines()
-        reader = csv.DictReader(decoded_file)
+        try:
+            decoded_file = csv_file.read().decode('utf-8').splitlines()
+            reader = csv.DictReader(decoded_file)
 
-        added_count = 0
-        for row in reader:
-            if not ChineseWord.objects.filter(hanzi=row['hanzi']).exists():
-                ChineseWord.objects.create(
-                    hanzi=row['hanzi'],
-                    pinyin=row['pinyin'],
-                    translation=row['translation'],
-                    category=row['category']
+            required_columns = ['hanzi','pinyin','translation']
+            if not all(col in reader.fieldnames for col in required_columns):
+                messages.error(request, f'В CSV-файле должны быть столбцы: {", ".join(required_columns)}')
+                return redirect('import_csv')
+            added_count = 0
+            errors = []
 
-                )
-                added_count += 1
+            for row_num, row in enumerate(reader, start=2):
+                try:
+                    hanzi=row.get('hanzi', '').strip()
+                    pinyin=row.get('pinyin', '').strip()
+                    translation=row.get('translation', '').strip()
+                    category=row.get('category', '').strip()
 
-        messages.success(request, f'Импортировано {added_count} слов!')
-        return redirect('all_words')
+                    if not ChineseWord.objects.filter(hanzi=hanzi, user=request.user).exists():
+                        ChineseWord.objects.create(
+                            user=request.user,
+                            hanzi=hanzi,
+                            pinyin=pinyin,
+                            translation=translation,
+                            category=category
+                        )
+                        added_count += 1
+                    else:
+                        errors.append(f"Строка {row_num}: слово '{hanzi}' уже есть в твоем словаре ")
+
+                except Exception as e:
+                    errors.append(f"Строка {row_num}: ошибка - {str(e)}")
+
+            if added_count > 0:
+                messages.success(request, f'Импортировано {added_count} слов!')
+            if errors:
+                messages.warning(request, f'Было {len(errors)} ошибок. Первые 5: {" | ".join(errors[:5])}')
+
+            return redirect('all_words')
+
+        except Exception as e:
+            messages.error(request, f'Ошибка чтения CSV-файла: {str(e)}')
+            return redirect('import_csv')
 
     return render(request, 'flashcards/import_csv.html')
+
+def register(request):
+    """
+    Регистрация нового пользователя
+    """
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user) # Автоматический вход после регистрации
+            messages.success(request, 'Регистрация прошла успешно!')
+            return redirect('index')
+    else:
+        form = UserCreationForm()
+
+    return render(request, 'flashcards/register.html', {'form': form})
