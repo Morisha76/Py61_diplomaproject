@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DJANGO_ENV=production
+      - DJANGO_SECRET_KEY=your-secret-key-here-change-in-production
+    volumes:
+      - ./db.sqlite3:/app/db.sqlite3
+    restart: unless-stopped

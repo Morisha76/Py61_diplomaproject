@@ -1,3 +1,4 @@
+from email.policy import default
 from tabnanny import verbose
 
 from django.db import models
@@ -29,6 +30,17 @@ class ChineseWord(models.Model):
 
     example = models.TextField(blank=True, verbose_name= 'Пример использования')
     date_added = models.DateTimeField(auto_now_add=True, verbose_name= 'Дата добавления')
+
+    difficulty = models.IntegerField(
+        default = 0,
+        choices = [
+            (0, 'Новое'),
+            (1, 'Легкое'),
+            (2, 'Среднее'),
+            (3, 'Сложное'),
+        ],
+        verbose_name = 'Сложность'
+    )
 
     def __str__(self):
         return f"{self.hanzi} ({self.pinyin}) - {self.translation}"

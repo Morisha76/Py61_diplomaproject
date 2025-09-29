@@ -298,3 +298,39 @@ def delete_word(request, word_id):
         return redirect('all_words')
 
     return redirect('all_words')
+
+def flashcard_session(request):
+    """
+    Сессия обучения по карточкам
+    """
+    if request.method == 'POST':
+        word_id = request.POST.get('word_id')
+        action = request.POST.get('action')  # Обработка ответа пользователя
+
+        if word_id and action:
+            try:
+                current_word = ChineseWord.objects.get(id=word_id, user=request.user)
+                if action == 'know':
+                    current_word.difficulty = 1
+                    messages.success(request, f'Отлично! Слово "{current_word.hanzi}" помечено как изученное.')
+                elif action == 'dont_know':
+                    current_word.difficulty = 3
+                    messages.info(request, f'Слово "{current_word.hanzi}" добавлено в повторение.')
+                current_word.save()
+            except ChineseWord.DoesNotExist:
+                messages/error(request, 'Слово не найдено!')
+
+    words = ChineseWord.objects.filter(user=request.user)
+
+    if not words.exists():
+        messages.info(request, 'Добавьте слова для начала обучения!')
+        return redirect('all_words')
+
+    word = words.order_by('?').first()
+
+    context = {
+        'word': word,
+        'total_words': words.count()
+    }
+    return render(request, 'flashcards/flashcard_session.html', context)
+

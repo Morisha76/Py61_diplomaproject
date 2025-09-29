@@ -87,6 +87,7 @@
             <a href="{% url 'all_words' %}">📖 所有单词 (Все слова)</a>
             <a href="{% url 'search_word' %}">🔍 搜索单词 (Поиск слов)</a>
             <a href="{% url 'add_word' %}">✏️ 添加单词 (Добавить слово)</a>
+            <a href="{% url 'flashcard_session' %}">🃏 学习卡片 (Карточки)</a>
             <a href="{% url 'import_csv' %}">📁 导入CSV (Импорт CSV)</a>
             {% if user.is_authenticated %}
                 <a href="{% url 'quick_add_words' %}">⚡ 快速添加 (Быстрое добавление)</a>

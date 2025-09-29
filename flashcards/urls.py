@@ -14,6 +14,7 @@ urlpatterns = [
     path('add-word/', views.add_word, name='add_word'),
     path('edit-word/<int:word_id>/', views.edit_word, name='edit_word'),
     path('delete-word/<int:word_id>/', views.delete_word, name='delete_word'),
+    path('flashcards/', views.flashcard_session, name='flashcard_session'),
 ]
 
 

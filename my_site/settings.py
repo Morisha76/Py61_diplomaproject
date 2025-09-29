@@ -126,3 +126,18 @@ LOGIN_REDIRECT_URL = '/'
 LOGIN_URL = '/accounts/login/'
 
 SESSION_COOKIE_AGE = 1209600 # Время функционирования сессии (2 недели)
+
+import os
+
+if os.getenv('DJANGO_ENV') == 'production':
+    DEBUG = False
+
+    ALLOWED_HOSTS = ['*']
+
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+    MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
+    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticStorage'
+else:
+    DEBUG = True
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
